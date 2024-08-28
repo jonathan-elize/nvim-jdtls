@@ -110,8 +110,8 @@ function M.mk_test_results(bufnr)
       local lenses = lens.children or lens
       local failures = {}
       local results = {}
-      local error_symbol = '❌'
-      local success_symbol = '✔️ '
+      local error_symbol = ''
+      local success_symbol = ''
       for _, test in ipairs(tests) do
         local start_line_num = get_test_start_line_num(lenses, test)
         if test.failed then
@@ -208,7 +208,7 @@ function M.mk_test_results(bufnr)
         local result = results[i]
         local symbol = result.success and success_symbol or error_symbol
         vim.api.nvim_buf_set_extmark(bufnr, ns, result.lnum, 0, {
-          virt_text = { { symbol } },
+          virt_text = { { symbol, result.success and 'DiagnosticOk' or 'DiagnosticError' } },
           invalidate = true
         })
         unique_lnums[result.lnum] = true
@@ -226,13 +226,30 @@ function M.mk_test_results(bufnr)
           title = 'jdtls-tests',
           items = items,
         })
-        print(
-          'Tests finished. Results printed to dap-repl.',
-          #items > 0 and 'Errors added to quickfix list' or '',
-          string.format('(%s %d / %d)', error_symbol, num_failures, #tests)
+        -- print(
+        --   'Tests finished. Results printed to dap-repl.',
+        --   #items > 0 and 'Errors added to quickfix list' or '',
+        --   string.format('(%s %d / %d)', error_symbol, num_failures, #tests)
+        -- )
+        vim.api.nvim_echo(
+          {
+            { "Tests finished. Results printed to dap-repl." },
+            { #items > 0 and "Errors added to quickfix list" or "" },
+            { string.format(" (%s %d / %d)", error_symbol, num_failures, #tests), "DiagnosticError" },
+          },
+          false,
+          {}
         )
       else
-        print('Tests finished. Results printed to dap-repl.', success_symbol, #tests, 'succeeded')
+        -- print('Tests finished. Results printed to dap-repl.', success_symbol, #tests, 'succeeded')
+        vim.api.nvim_echo(
+          {
+            { "Tests finished. Results printed to dap-repl." },
+            { " " .. success_symbol, "DiagnosticOk" },
+          },
+          false,
+          {}
+        )
       end
       return items
     end,
