@@ -1306,7 +1306,7 @@ end
 function M.set_runtime(runtime)
   local client
   for _, c in pairs(util.get_clients({name = "jdtls"})) do
-    if c.config.settings.java then
+    if c.config and c.config.settings and c.config.settings.java then
       client = c
       break
     end
